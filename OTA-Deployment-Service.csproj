@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>OTA_Service</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="wwwroot\apps\de.noxp.myapp\**" />
+    <Content Remove="wwwroot\apps\de.noxp.myapp\**" />
+    <EmbeddedResource Remove="wwwroot\apps\de.noxp.myapp\**" />
+    <None Remove="wwwroot\apps\de.noxp.myapp\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.1" />
+  </ItemGroup>
+
+
+
+</Project>

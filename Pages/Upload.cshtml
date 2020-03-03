@@ -1,0 +1,22 @@
+﻿@page
+@model OTA_Service.UploadModel
+@{
+    ViewData["Title"] = "Upload";
+}
+
+<h1>@ViewData["Title"]</h1>
+<form method="post" enctype="multipart/form-data">
+    <div class="row">
+        <div class="column" style="text-align: right; width: 15%;">
+            <label>Name</label><br />
+            <label>Bundle Identifier</label><br />
+            <label>IPA</label><br />
+        </div>
+        <div class="column" style="text-align: left;">
+            <input type="text" asp-for="Name" required /><br />
+            <input type="text" asp-for="BundleIdentifier" required /><br />
+            <input type="file" asp-for="Upload" required /><br />
+            <input type="submit" value="Upload" />
+        </div>
+    </div>
+</form>
