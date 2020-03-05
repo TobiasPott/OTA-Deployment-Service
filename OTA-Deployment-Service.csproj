@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>OTA_Service</RootNamespace>
+    <RootNamespace>OTA.Deployment</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

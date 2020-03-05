@@ -3,15 +3,28 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace OTA_Service
 {
     public class UploadModel : PageModel
     {
+        // https://community.scripture.software.sil.org/t/distributing-ios-ipa-apps-with-ota-over-the-air-instead-of-apple-app-store/728
+
+        private const string Placeholder_Url = "{url}";
+        private const string Placeholder_Title = "{title}";
+        private const string Placeholder_BundleIdentifier = "{bundle-identifier}";
+        private const string Placeholder_PListUrl = "{plist-url}";
+        private const string Placeholder_Version = "{version}";
+
+
+
         [BindProperty]
         public IFormFile Upload { get; set; }
 
@@ -38,13 +51,16 @@ namespace OTA_Service
             string pListUrl = CopyPList(bundleIdentifier, title, version, ipaUrl);
             string htmlUrl = CopyHtml(bundleIdentifier, title, pListUrl);
 
+            AppPackageCache.Add(this.BundleIdentifier, this.Name, version);
+            AppPackageCache.Save();
             this.Upload = null;
             this.Name = string.Empty;
             this.BundleIdentifier = string.Empty;
         }
         public void OnGet()
         {
-
+            AppPackageCache.Initialize();
+            System.Diagnostics.Debug.WriteLine("Cached files: " + AppPackageCache.Count);
         }
 
         public string Host
@@ -57,14 +73,6 @@ namespace OTA_Service
                 return this.Request.Host.Host;
             }
         }
-
-        // https://community.scripture.software.sil.org/t/distributing-ios-ipa-apps-with-ota-over-the-air-instead-of-apple-app-store/728
-
-        private const string Placeholder_Url = "{url}";
-        private const string Placeholder_Title = "{title}";
-        private const string Placeholder_BundleIdentifier = "{bundle-identifier}";
-        private const string Placeholder_PListUrl = "{plist-url}";
-        private const string Placeholder_Version = "{version}";
 
 
         // ! ! ! !
@@ -182,7 +190,6 @@ namespace OTA_Service
             }
             throw new Exception("No network adapters with an IPv4 address in the system!");
         }
-
         public static string GetLocalIPAddress2()
         {
             string localIP;
@@ -194,6 +201,7 @@ namespace OTA_Service
             }
             return localIP;
         }
+
     }
 
 
@@ -204,4 +212,70 @@ namespace OTA_Service
             return string.Join("/", values);
         }
     }
+
+    public class AppPackageInfo
+    {
+        public string Url { get; set; }
+        public string Identifier { get; set; }
+        public string Name { get; set; }
+        public string Version { get; set; }
+
+    }
+
+    public class AppPackageCache
+    {
+
+        private static object _cacheLock = new object();
+        private static List<AppPackageInfo> _packageInfos = new List<AppPackageInfo>();
+
+        public static int Count
+        { get => _packageInfos.Count; }
+
+        public static void Initialize()
+        {
+            if (_packageInfos.Count == 0)
+            {
+                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "apps");
+                FileInfo fiCache = new FileInfo(Path.Combine(path, "cache.json"));
+                if (fiCache.Exists)
+                {
+                    lock (_cacheLock)
+                    {
+                        string jsonString = File.ReadAllText(fiCache.FullName);
+                        List<AppPackageInfo> packageInfos = JsonSerializer.Deserialize<List<AppPackageInfo>>(jsonString);
+                        _packageInfos = packageInfos;
+                    }
+                }
+            }
+        }
+
+        public static void Save()
+        {
+            if (_packageInfos != null)
+            {
+                string path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "apps");
+                FileInfo fiCache = new FileInfo(Path.Combine(path, "cache.json"));
+
+                lock (_cacheLock)
+                {
+                    File.WriteAllText(fiCache.FullName, JsonSerializer.Serialize<List<AppPackageInfo>>(_packageInfos));
+                }
+            }
+        }
+
+
+        public static void Add(string identifier, string name, string version = "1.0.0")
+        {
+            AppPackageInfo info = new AppPackageInfo() { Identifier = identifier, Name = name, Version = version, Url = PathWeb.Combine("apps", identifier, "index.html") };
+            AppPackageInfo existingInfo = _packageInfos.FirstOrDefault(x => (x.Name.Equals(info.Name) && x.Identifier.Equals(info.Identifier)));
+            if (existingInfo != null)
+                _packageInfos.Remove(existingInfo);
+            _packageInfos.Add(info);
+        }
+
+
+
+
+    }
+
 }
