@@ -6,17 +6,30 @@
 
 <h1>@ViewData["Title"]</h1>
 <form method="post" enctype="multipart/form-data">
-    <div class="row">
-        <div class="column" style="text-align: right; width: 15%;">
-            <label>Name</label><br />
-            <label>Bundle Identifier</label><br />
-            <label>IPA</label><br />
-        </div>
-        <div class="column" style="text-align: left;">
-            <input type="text" asp-for="Name" required /><br />
-            <input type="text" asp-for="BundleIdentifier" required /><br />
-            <input type="file" asp-for="Upload" required /><br />
-            <input type="submit" value="Upload" />
-        </div>
-    </div>
+    <table style="width: 50%;">
+        <tr style="width: 15%;">
+            <td>Name</td>
+            <td>
+                <input type="text" asp-for="Name" required />
+            </td>
+        </tr>
+        <tr>
+            <td>Bundle Identifier</td>
+            <td>
+                <input type="text" asp-for="BundleIdentifier" required />
+            </td>
+        </tr>
+        <tr>
+            <td>File</td>
+            <td>
+                <input type="file" asp-for="Upload" required />
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <input type="submit" value="Upload" />
+            </td>
+        </tr>
+    </table>
 </form>

@@ -56,6 +56,11 @@ namespace OTA_Service
             this.Upload = null;
             this.Name = string.Empty;
             this.BundleIdentifier = string.Empty;
+
+            if (ModelState.IsValid)
+                ModelState.Clear();
+            this.RedirectToPage("Upload");
+            //this.Redirect("~/Upload.cshtml");
         }
         public void OnGet()
         {
